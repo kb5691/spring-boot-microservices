@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: comment-api-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: comment-api-pod
+  template:
+    metadata:
+      labels:
+        app: comment-api-pod
+    spec:
+      containers:
+        - name: comment-api-container
+          image: __DOCKER_IMAGE__
+          ports:
+            - name: comment-api-cp
+              containerPort: 80
+          env:
+            - name: PORT
+              value: "80"
+          # resources:
+          #   limits:
+          #     memory: 512Mi
+          #     cpu: "1"
+          #   requests:
+          #     memory: 256Mi
+          #     cpu: "0.2"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: comment-api-cluster-ip
+spec:
+  type: ClusterIP
+  selector:
+    app: comment-api-pod
+  ports:
+    - name: comment-api-cip
+      port: 80
+      targetPort: comment-api-cp
+      protocol: TCP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: comment-api-loadbalancer
+spec:
+  type: LoadBalancer
+  selector:
+    app: comment-api-pod
+  ports:
+    - name: comment-api-lp
+      protocol: TCP
+      port: 80
+      targetPort: comment-api-cp

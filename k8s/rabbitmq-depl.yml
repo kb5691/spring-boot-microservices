@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rabbitmq-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rabbitmq-pod
+  template:
+    metadata:
+      labels:
+        app: rabbitmq-pod
+    spec:
+      containers:
+        - name: rabbitmq-container
+          image: rabbitmq:3.9.13-management-alpine
+          ports:
+            - name: rbmq-mgmt-cp
+              containerPort: 15672
+            - name: rbmq-msg-cp
+              containerPort: 5672
+          env:
+            - name: RABBITMQ_DEFAULT_USER
+              value: rabbitmq
+            - name: RABBITMQ_DEFAULT_PASS
+              value: rabbitmq
+          resources:
+            limits:
+              memory: 512Mi
+              cpu: "1"
+            requests:
+              memory: 256Mi
+              cpu: "0.2"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq-cluster-ip
+spec:
+  type: ClusterIP
+  selector:
+    app: rabbitmq-pod
+  ports:
+    - name: rbmq-mgmt-cip
+      protocol: TCP
+      port: 15672
+      targetPort: rbmq-mgmt-cp
+    - name: rbmq-msg-cip
+      protocol: TCP
+      port: 5672
+      targetPort: rbmq-msg-cp
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq-loadbalancer
+spec:
+  type: LoadBalancer
+  selector:
+    app: rabbitmq-pod
+  ports:
+    - name: rbmq-mgmt-lp
+      protocol: TCP
+      port: 15672
+      targetPort: rbmq-mgmt-cp
+    - name: rbmq-msg-lp
+      protocol: TCP
+      port: 5672
+      targetPort: rbmq-msg-cp

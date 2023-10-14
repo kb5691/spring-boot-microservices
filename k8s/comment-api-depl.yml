@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: comment-api-container
-          image: __DOCKER_IMAGE__
+          image: kb5691/bookdb-author-service:300907f
           ports:
             - name: comment-api-cp
               containerPort: 80
@@ -43,18 +43,3 @@ spec:
       port: 80
       targetPort: comment-api-cp
       protocol: TCP
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: comment-api-loadbalancer
-spec:
-  type: LoadBalancer
-  selector:
-    app: comment-api-pod
-  ports:
-    - name: comment-api-lp
-      protocol: TCP
-      port: 80
-      targetPort: comment-api-cp
